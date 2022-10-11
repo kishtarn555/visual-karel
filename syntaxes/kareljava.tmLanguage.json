@@ -1,0 +1,234 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "kareljava",
+	"patterns": [		
+		{
+			"include": "#comment"
+		},
+		{
+			"include": "#program-declatarion"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.kareljava",
+				"match": "\\b(if|while|iterate|return)\\b"
+			}]
+		},
+		"comment": {
+			"patterns": [
+				{
+					"name": "comment.block.kareljava",
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.kareljava"
+						}
+					},
+					"end": "\\*/",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.kareljava"
+						}
+					}
+				},
+				{
+					"name":"comment.line.double-slash.kareljava",
+					"begin": "//",
+					"end": "$"
+				}
+			]
+		},
+		"program-declatarion":{
+			"begin": "\\b(class)\\b",
+			"beginCaptures": {
+				"1": {"name": "keyword.other.class.kareljava"},
+				"2": {"name": "entity.name.class.kareljava"}
+			},
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#global-program"}
+			],
+			"end": "(?<=\\})"
+		},
+		"global-program": {
+			"begin": "\\b(program)\\b",
+			"beginCaptures": {
+				"1":{
+					"name":"entity.name.class.kareljava"
+				}
+			},
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#program-inner"}
+			],
+			"end": "(?<=\\})"
+		},
+		"program-inner":{
+			"begin": "\\{",
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#method-declaration"},
+				{"include": "#program-code"}
+			],
+			"end": "\\}"
+		},
+		"method-declaration":{
+			"begin": "\\b((void)|(define))\\b",
+			"beginCaptures": {
+				"1":{
+					"name":"keyword.other.function.kareljava"
+				}				
+			},
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#method-name"}
+			],
+			"end": "(?<=\\})"
+		},
+		"method-name":{
+			"begin": "\\b([a-zA-Z][a-zA-Z0-9_]*)\\b",
+			"beginCaptures": {
+				"1":{"name":"entity.name.function.declatarion.kareljava"}
+			},
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#variable-signature"}
+			],
+			"end": "(?<=\\})"
+		},
+		"program-code":{
+			"begin": "\\b(program)\\s*\\(\\s*\\)",
+			"beginCaptures": {
+				"1":{"name":"entity.name.function.program.kareljava"}
+			},
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#bracket-expr"}
+			],
+			"end": "(?<=\\})"
+		},
+		"variable-signature":{
+			"begin":"\\(\\s*([a-zA-Z][a-zA-Z0-9_]*)?\\s*\\)",
+			"beginCaptures": {
+				"1":{"name":"variable.name.kareljava"}
+			},
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#bracket-expr"}
+			],
+			"end": "(?<=\\})"
+		},
+		"bracket-expr":{
+			"begin": "\\{",
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#expr"}
+			],
+			"end": "\\}"
+		},
+		"expr":{
+			"patterns": [
+				{"include": "#comment"},
+				{"include": "#iterate"},
+				{"include": "#while"},
+				{"include": "#instruction"},
+				{"include": "#call"},
+				{"include": "#bracket-expr"},
+				{"match": ";"}
+			]
+		},
+		"iterate":{
+			"begin": "\\b(iterate)\\b",
+			"beginCaptures": {
+				"1":{"name":"keyword.control.iterate.kareljava"}
+			},
+			"patterns": [
+				{"include": "#number"},
+				{"include": "#expr"}
+			],
+			"end": "(?<=\\})|(?<=;)"
+		},
+		"number":{
+			"begin": "\\(",
+			"patterns": [{"include": "#number-expr"}],
+			"end": "\\)"
+		},
+		"number-expr":{
+			"patterns": [
+				{
+					"begin": "\\b(succ|pred)\\(",
+					"beginCaptures": {
+						"1":{"name":"support.function.number.kareljava"}
+					},
+					"patterns": [{"include": "#number-expr"}],
+					"end": "\\)"
+				},
+				{
+					"match": "\\d+",
+					"name":"constant.numeric"
+				},
+				{
+					"match": "[a-zA-Z][a-zA-Z0-9_]*",
+					"name":"variable.name"
+				}
+			]
+		},
+		"while": {
+			"begin": "\\b(while)\\b",
+			"beginCaptures": {
+				"1":{"name":"keyword.control"}
+			},
+			"patterns": [
+				{"include": "#boolean"},
+				{"include": "#expr"}
+			],
+			"end": "(?<=\\})|(?<=;)"
+		},
+		"boolean":{
+			"begin": "\\(",
+			"patterns": [{"include": "#bool-expr"}],
+			"end": "\\)"
+		},
+		"bool-expr":{
+			"patterns": [
+				{
+					"begin":"\\(",
+					"patterns": [{"include": "#bool-expr"}],
+					"end":"\\)"
+				},
+				{
+					"match": "(\\!|\\||\\&)",
+					"name":"keyword.operator"
+				},
+				{
+					"match": "\\b(frontIsClear|frontIsBlocked|leftIsClear|rightIsBlocked)\\b",
+					"captures": {
+						"1":{"name":"support.function.booleanNucleus.kareljava"}
+					}
+				}
+			]
+		},
+		"call": {
+			"begin": "\\b([a-zA-Z][a-zA-Z0-9_]*)\\b",
+			"beginCaptures": {
+				"1":{"name":"entity.name.function.invoke"}
+			},
+			"patterns": [
+				{"include": "#number"},
+				{"match": "\\(\\s*\\)" }
+			],
+			"end": ";"
+		},
+		"instruction": {
+			"match": "\\b(move|turnleft|pickbeeper|putbeeper|turnoff)\\s*\\(\\s*\\)\\s*;",
+			"captures": {
+				"1":{
+					"name":"support.function.systemInvoke"
+				}
+			}
+		}
+	},
+	"scopeName": "source.kj"
+}
